@@ -1,6 +1,6 @@
-// TypeScript Version: 3.7
-import { Params, Paginated, Id, NullableId, Hook } from '@feathersjs/feathers';
-import { AdapterService, ServiceOptions, InternalServiceMethods } from '@feathersjs/adapter-commons';
+// Minimum TypeScript Version: 4.0
+import { Params, Id, NullableId, Hook } from '@feathersjs/feathers';
+import { AdapterService, Paginated, ServiceOptions, InternalServiceMethods } from '@feathersjs/adapter-commons';
 import { Model } from 'mongoose';
 
 export namespace hooks {
