@@ -1,7 +1,7 @@
-// Minimum TypeScript Version: 4.0
+// TypeScript Version: 4.0
 import { Params, Id, NullableId, Hook } from '@feathersjs/feathers';
 import { AdapterService, Paginated, ServiceOptions, InternalServiceMethods } from '@feathersjs/adapter-commons';
-import { Model } from 'mongoose';
+import { Model, Document, Query } from 'mongoose';
 
 export namespace hooks {
   function toObject(options?: any, dataField?: string): Hook;
@@ -13,16 +13,18 @@ export namespace transactionManager {
   const rollbackTransaction: Hook;
 }
 
-export interface MongooseServiceOptions extends ServiceOptions {
-  Model: Model<any>;
+export interface MongooseServiceOptions<T extends Document = any> extends ServiceOptions {
+  Model: Model<T>;
   lean: boolean;
   overwrite: boolean;
   useEstimatedDocumentCount: boolean;
+  queryModifier?: (query: Query<any, any>, params: Params) => void;
+  queryModifierKey?: string;
 }
 
 export class Service<T = any> extends AdapterService<T> implements InternalServiceMethods<T> {
-  Model: Model<any>;
-  options: MongooseServiceOptions;
+  Model: Model<Document>;
+  options: MongooseServiceOptions<Document>;
 
   constructor(config?: Partial<MongooseServiceOptions>);
 

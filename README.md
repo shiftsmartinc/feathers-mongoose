@@ -1,8 +1,6 @@
 # feathers-mongoose
 
-[![Greenkeeper badge](https://badges.greenkeeper.io/feathersjs-ecosystem/feathers-mongoose.svg)](https://greenkeeper.io/)
-
-[![Build Status](https://travis-ci.org/feathersjs-ecosystem/feathers-mongoose.png?branch=master)](https://travis-ci.org/feathersjs-ecosystem/feathers-mongoose)
+[![CI](https://github.com/feathersjs-ecosystem/feathers-mongoose/workflows/CI/badge.svg)](https://github.com/feathersjs-ecosystem/feathers-mongoose/actions?query=workflow%3ACI)
 [![Dependency Status](https://img.shields.io/david/feathersjs-ecosystem/feathers-mongoose.svg?style=flat-square)](https://david-dm.org/feathersjs-ecosystem/feathers-mongoose)
 [![Download Status](https://img.shields.io/npm/dm/feathers-mongoose.svg?style=flat-square)](https://www.npmjs.com/package/feathers-mongoose)
 
@@ -51,7 +49,9 @@ __Options:__
 - `multi` (*optional*) - Allow `create` with arrays and `update` and `remove` with `id` `null` to change multiple items. Can be `true` for all methods or an array of allowed methods (e.g. `[ 'remove', 'create' ]`)
 - `overwrite` (*optional*, default: `true`) - Overwrite the document when update, making mongoose detect is new document and trigger default value for unspecified properties in mongoose schema.
 - `discriminators` (*optional*) - A list of mongoose models that inherit from `Model`.
-- `useEstimatedDocumentCount` (*optional*, default: `false`) - Use `estimatedDocumentCount` instead (usuall not necessary)
+- `useEstimatedDocumentCount` (*optional*, default: `false`) - Use `estimatedDocumentCount` instead (usually not necessary)
+- `queryModifier` (*optional*) - A function that takes in the raw mongoose Query object and params, which modifies all find and get requests unless overridden. (see Query Modifiers below)
+- `queryModifierKey` (*optional*, default: `'queryModifier'`) - The key to use to get the override query modifier function from the params. (see Query Modifiers below)
 
 > **Important:** To avoid odd error handling behaviour, always set `mongoose.Promise = global.Promise`. If not available already, Feathers comes with a polyfill for native Promises.
 
@@ -347,6 +347,48 @@ let moduleExports = {
 
 module.exports = moduleExports;
 ```
+
+## Query Modifiers
+
+Sometimes it's important to use an unusual Mongoose Query method, like [specifying whether to read from a primary or secondary node,](https://mongoosejs.com/docs/api.html#query_Query-read) but maybe only for certain requests.
+
+You can access the internal Mongoose Query object used for a find/get request by specifying the queryModifier function. It is also possible to override that global function by specifying the function in a requests params.
+
+```js
+// Specify a global query modifier when creating the service
+app.use('/messages', service({
+  Model,
+  queryModifier: (query, params) => {
+    query.read('secondaryPreferred');
+  }
+}));
+
+app.service('messages').find({
+  query: { ... },
+}).then((result) => {
+  console.log('Result from secondary:', result)
+});
+
+// Override the modifier on a per-request basis
+app.service('messages').find({
+  query: { ... },
+  queryModifier: (query, params) => {
+    query.read('primaryPreferred');
+  }
+}).then((result) => {
+  console.log('Result from primary:', result)
+});
+
+// Disable the global modifier on a per-request basis
+app.service('messages').find({
+  query: { ... },
+  queryModifier: false
+}).then((result) => {
+  console.log('Result from default option:', result)
+});
+```
+
+> **Note:** Due to replication lag, a secondary node can have "stale" data. You should ensure that this "staleness" will not be an issue for your application before reading from the secondary set.
 
 ## Contributing
 
