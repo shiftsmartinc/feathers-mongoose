@@ -1,6 +1,6 @@
 // TypeScript Version: 4.0
 import { Params, Id, NullableId, Hook } from '@feathersjs/feathers';
-import { AdapterBase, Paginated, ServiceOptions, InternalServiceMethods } from '@feathersjs/adapter-commons';
+import { AdapterBase, Paginated, AdapterServiceOptions, InternalServiceMethods } from '@feathersjs/adapter-commons';
 import { Model, Document, Query } from 'mongoose';
 
 export namespace hooks {
@@ -13,7 +13,7 @@ export namespace transactionManager {
   const rollbackTransaction: Hook;
 }
 
-export interface MongooseServiceOptions<T extends Document = any> extends ServiceOptions {
+export interface MongooseServiceOptions<T extends Document = any> extends AdapterServiceOptions {
   Model: Model<T>;
   lean: boolean;
   overwrite: boolean;
